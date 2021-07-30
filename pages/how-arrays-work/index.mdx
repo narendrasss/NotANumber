@@ -9,11 +9,13 @@ layout: 'array'
 
 import Placeholder from '@/components/utils/Placeholder'
 import Callout from '@/elements/Callout'
+import FullBleed from '@/elements/FullBleed'
 
 import ArrayGrid from '@/components/how-arrays-work/ArrayGrid'
 import ArrayLookup from '@/components/how-arrays-work/ArrayLookup'
 import ArrayGrow from '@/components/how-arrays-work/ArrayGrow'
-import MemoryReadWrite from '@/components/how-arrays-work/MemoryReadWrite'
+import ReadMemory from '@/components/how-arrays-work/ReadMemory'
+import WriteMemory from '@/components/how-arrays-work/WriteMemory'
 import Allocate from '@/components/how-arrays-work/Allocate'
 
 This is an array — `[]`.
@@ -24,7 +26,9 @@ This is also an array:
 
 An array represents a list of items. Arrays have fast lookup, meaning if you know the index of the item you're looking for, you can find the item in the array pretty quickly.
 
-<ArrayLookup arr={[8, 10, 7, 9, 12, 3, 4, 5]} activeIndex={3} />
+<FullBleed size="full">
+  <ArrayLookup arr={[8, 10, 7, 9, 12, 3, 4, 5]} activeIndex={3} />
+</FullBleed>
 
 In JavaScript (and other dynamic-type languages), arrays can grow in size:
 
@@ -34,23 +38,32 @@ And can even contain multiple types of values:
 
 <ArrayGrid arr={[8, false, 'hello', 9]} />
 
-But how does this all work? What's going on "under the hood" when you lookup an item in an array? What makes that operation so fast?
+**But how does this all work?** What's going on "under the hood" when you lookup an item in an array? What makes that operation so fast?
 
 In this post, we're going to dive into the inner workings of an array by building one ourselves, with the help of a few memory primitives.
 
 ## Memory API
 
-Before we get started, let's take a look at the memory APIs that are available to us. If you're not super familiar with how computer memory works, don't worry — we'll go over it together.
+Before we get started, let's take a look at the memory APIs that are available to us. We're going to have access to a `Memory` object with four methods:
 
-As a starting point, you can think of memory as a super long array of bytes where each byte has an address. Using the address, you can read and write data from memory:
+1. `get(address: number)` — returns the value at a specific memory address.
+2. `set(address: number, value: number)` — sets the given address to the given value.
+3. `allocate(bytes: number)` — allocates a given number of bytes, returning a pointer to the _first_ allocated byte.
+4. `free(pointer: Pointer)` — frees the memory location pointed to by the pointer.
 
-<MemoryReadWrite />
+This memory object is designed to act just like the memory in your computer. If you've written code in C or C++ before, some of these methods might be familiar to you. If not, that's okay too — we'll go through each one in this section.
+
+As a starting point, you can think of memory as a super long array of bytes where each byte has an address. Using the address, you can read from and write to memory:
+
+<FullBleed size="full">
+  <ReadMemory />
+</FullBleed>
 
 ### Protection
 
-One thing to keep in mind is that memory is "gate keeped" by the hardware and operating system (OS) — you can't read _or_ write from memory unless both the hardware and OS lets you\*.
+Memory is "gate keeped" by the hardware and operating system (OS) — you can't read _nor_ write from memory unless both the hardware and OS lets you\*.
 
-> \*And for good reason too — your computer memory is shared between the hundreds of different programs that are running at the same time. Imagine if programs are able to change the memory that's being used by other programs!
+> \*And for good reason too — your computer memory is shared between the hundreds of different programs that are running at the same time. Imagine if programs are able to change memory that's being used by other programs!
 
 To get past the memory gates, you have to ask for permission from the OS by allocating space:
 
@@ -60,23 +73,15 @@ const pointer = Mem.allocate(/* num of bytes */ 12)
 
 Allocating memory returns a pointer to the address of the **first byte** that you allocated:
 
-<Allocate />
+![A variable arr with an arrow pointing to the first byte in an array](./allocation.png)
+
+Functionally, a pointer acts like an address. You can use it in place of an address to read and write to memory. In reality though, a pointer contains some other metadata that's useful for the other memory methods.
 
 When you allocate space, you're requesting to use a certain number of bytes from memory for your program to use. The OS is pretty generous too — as long as there's memory left, the OS will allocate the space for you.
 
-Once allocated, you're free to read and write to that memory location as you please:
+<Placeholder name="memory allocation" />
 
-<Placeholder name="read and write to allocated memory" />
-
-But if you try to read and write to memory that's not allocated yet, it's not going to work:
-
-<Placeholder name="read to non-allocated memory" />
-
-<Callout label="Fake Memory">
-
-Here, trying to write to a space that's not yours only triggers an error animation. If you try to write to a space in your actual computer memory that wasn't allocated (using C, for example) you would trigger the dreaded SEGFAULT error and your program's going to crash.
-
-</Callout>
+Once allocated, you're free to read and write to that memory location as you please — but if you try to read and write to memory that's not allocated yet, it's not going to work.
 
 Finally, once you're done with the data and don't need it anymore, you can free up that space so the computer can use the memory for other things:
 
@@ -88,41 +93,24 @@ const pointer = Mem.allocate(/* num of bytes */ 12)
 Mem.free(pointer)
 ```
 
-<Placeholder name="freeing memory" />
-
-But be careful! Once you've freed a memory location, you can't read from that location anymore because it's no longer allocated. Trying to do so will trigger another crash:
-
-```js
-const pointer = Mem.allocate(/* num of bytes */ 12)
-
-// do stuff
-
-Mem.free(pointer)
-const item = Mem.get(pointer) // oops!
-```
-
-<Placeholder name="read from freed memory" />
-
-You can't free the same space twice either because that space might be used by something else already:
-
-```js
-const pointer = Mem.allocate(/* num of bytes */ 12)
-
-// do stuff
-
-Mem.free(pointer)
-Mem.free(pointer) // oops!
-```
-
 <Callout label="Do we really have to do this?">
 
-If you feel like this is really tedious, that's because it is. Bugs related to memory management happens _all the time_ when writing in lower level languages. Thankfully, JavaScript uses something called a garbage collector that automates memory management for you, allowing you to focus on the features that matter.
+If you feel like this is really tedious, that's because it is. Bugs related to memory management happens _all the time_ when writing in lower level languages. Thankfully, JavaScript uses something called a garbage collector that automates memory management for you, allowing you to focus on the interesting stuff.
 
 </Callout>
 
-One thing you might notice from this allocate-free workflow is that you end up not referencing addresses directly. You just need to work with pointers and move them around.
+One thing you might notice from this allocate-free workflow is that you end up not referencing addresses directly. You just need to work with pointers and move them around:
 
-Quick summary:
+```js
+const pointer = Mem.allocate(/* num of bytes */ 12)
+
+Mem.set(pointer, 10)
+console.log(Mem.get(pointer)) // prints 10
+
+Mem.free(pointer)
+```
+
+As a quick summary:
 
 - Memory, for our purposes, is a long array of bytes where each byte has an associated address
 - To use memory, you need to allocate it first; this allocation process returns a pointer, the address of the first byte that you allocated
@@ -131,12 +119,12 @@ Quick summary:
 
 ## Building the Array
 
-Back to arrays! Let's start off with a couple assumptions for simplicity:
+Now that we have a basic understanding of how memory works, let's jump back to arrays! We'll start with a few assumptions to make our lives easier:
 
-1. The array has a fixed length (i.e. it cannot grow in size)
-2. The array can only contain numbers
+1. The array has a fixed length (i.e. it cannot grow in size), and
+2. The array can only contain numbers.
 
-These assumptions may not make too much sense right now, but don't worry — we'll ease them as we move on.
+These assumptions may seem really restrictive, but don't worry — we'll ease them as we move on.
 
 ### Allocating Space
 
@@ -158,7 +146,25 @@ total # of bytes = length x (# of bytes for 1 number)
 
 In JavaScript, numbers are 8 bytes in size, so we'll use 8 for the number of bytes for 1 number. This gives the total space needed as 8 multiplied by the length of the array:
 
+```js
+function createArray(length) {
+  const totalSize = length * 8 // number of bytes for 1 number
+  const array = Mem.allocate(totalSize)
+
+  return {
+    get(index) {
+      // TODO
+    },
+    set(index, value) {
+      // TODO
+    },
+  }
+}
+```
+
 <Placeholder name="allocate array" />
+
+Notice that our array is actually a pointer, since that is what's returtned from the allocate function.
 
 ### Reading and Writing
 
@@ -198,7 +204,7 @@ And this is why arrays are fast! Using the index, we can derive the address that
 
 ## Growing the Array
 
-So far, our array is static. We define a capacity when we created it, but it can never exceed that initial capacity. Now, let's ease one of our assumptions and let the array grow in size. How would we change our array to support this?
+So far, our array is static. We define a capacity when we created it, but it can never exceed that initial capacity. Now, let's ease one of our assumptions and let the array grow in size. In particular, we want to implement a `push` function that would add items to the end of the array. How would we change our array to support this?
 
 If our array's length is less than the initial capacity, we don't have to change anything. In this case, all we have to do to add an item is:
 
@@ -247,6 +253,8 @@ Now, let's say we want to read an element from the array using its index. First,
 address of index i = address at index 0 + (size of item * i)
 ```
 
-But, um, wait a minute. What's the `size of item`? Now that our elements are of different types, the size (number of bytes) of each item may not necessarily be the same. Uh oh, we can't quickly determine the address any more!
+But, um, wait a minute. What's the `size of item`? Now that our elements are of different types, the size (number of bytes) of each item may not necessarily be the same. Uh oh, our formula breaks down, and _we can't quickly determine the address any more_!
 
 <Placeholder name="array element different size" />
+
+Ok, so our end goal here is to somehow make each element of the array the same size despite

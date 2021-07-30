@@ -2,9 +2,13 @@ import { motion } from 'framer-motion'
 
 import { styled } from '@/stitches'
 
-const ArrayElement = styled(motion.li, {
+export default function ArrayElement(props) {
+  return <Item {...props} />
+}
+
+const Item = styled(motion.li, {
   $$size: '4.5rem',
-  $$border: '3px solid var(--color-dark)',
+  $$border: '3px solid var(--color-border, var(--color-dark))',
   $$radius: '8px',
 
   background: 'var(--color-main)',
@@ -12,7 +16,7 @@ const ArrayElement = styled(motion.li, {
   borderRadius: '$$radius',
   color: 'white',
   fontFamily: 'var(--text-mono)',
-  fontSize: '1.5rem',
+  fontSize: '1.2rem',
   height: '$$size',
   width: '$$size',
   display: 'flex',
@@ -27,11 +31,9 @@ const ArrayElement = styled(motion.li, {
       },
       boolean: {
         background: 'var(--color-highlight-1)',
-        fontSize: '1rem',
       },
       string: {
         background: 'var(--color-highlight-2)',
-        fontSize: '1rem',
       },
     },
     shadow: {
@@ -55,5 +57,3 @@ const ArrayElement = styled(motion.li, {
     },
   },
 })
-
-export default ArrayElement

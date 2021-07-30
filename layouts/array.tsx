@@ -58,22 +58,35 @@ export default function ArrayLayout({
           <meta property="og:url" content={`https://nan.fyi/${slug}`} />
           <meta name="twitter:card" content="summary_large_image" />
         </Head>
-        <header>
+        <Header>
+          <p>Not a Number</p>
           <Title>{frontMatter.title}</Title>
           <Blurb>{frontMatter.blurb}</Blurb>
           <Blurb>{formatter.format(new Date(frontMatter.publishedAt))}</Blurb>
-        </header>
+        </Header>
         {children}
       </Article>
     </MDXProvider>
   )
 }
 
+const Header = styled('header', {
+  gridColumn: '1 / -1',
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  textAlign: 'center',
+  padding: '0 24px',
+})
+
 const Title = styled('h1', {
-  fontFamily: 'var(--text-mono)',
-  fontSize: '3rem',
+  fontFamily: 'var(--text-serif)',
+  fontSize: '6rem',
   fontWeight: '500',
   lineHeight: '1',
+  margin: '64px 0',
 })
 
 const Blurb = styled('p', {
@@ -103,7 +116,7 @@ const Article = styled('article', {
   fontFamily: 'var(--text-sans)',
   color: 'hsla(240, 60%, 25%)',
   backgroundColor: 'hsla(var(--base-color), 98%)',
-  padding: 'calc(3 * var(--horizontal-padding)) 0',
+  paddingBottom: 'calc(3 * var(--horizontal-padding))',
 
   display: 'grid',
   gridTemplateColumns:

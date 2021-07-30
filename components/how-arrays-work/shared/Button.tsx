@@ -2,13 +2,19 @@ import { motion } from 'framer-motion'
 
 import { styled } from '@/stitches'
 
-export default function Button({ onClick, children, ...delegated }) {
+export default function Button({
+  onClick,
+  children,
+  flat = false,
+  type = undefined,
+  ...delegated
+}) {
   return (
     <ButtonWrapper {...delegated}>
-      <ButtonTrigger onClick={onClick} whileTap={{ x: 4, y: 4 }}>
+      <ButtonTrigger onClick={onClick} whileTap={{ x: 4, y: 4 }} type={type}>
         {children}
       </ButtonTrigger>
-      <ButtonShadow />
+      {!flat && <ButtonShadow />}
     </ButtonWrapper>
   )
 }
@@ -21,7 +27,7 @@ const ButtonWrapper = styled('div', {
 
 const ButtonTrigger = styled(motion.button, {
   position: 'relative',
-  border: '3px solid var(--color-dark)',
+  border: 'var(--border-width, 3px) solid var(--color-dark)',
   background: 'var(--color-light)',
   color: 'var(--color-dark)',
   fontFamily: 'var(--text-mono)',
@@ -32,6 +38,16 @@ const ButtonTrigger = styled(motion.button, {
 
   ':focus': {
     outline: 'none',
+  },
+
+  variants: {
+    type: {
+      small: {
+        '--border-width': '2px',
+        padding: '4px 6px',
+        fontWeight: 400,
+      },
+    },
   },
 })
 
