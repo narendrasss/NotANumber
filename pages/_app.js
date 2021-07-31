@@ -36,7 +36,7 @@ const Main = styled.main`
   --gray400: hsl(var(--gray), 65%);
   --gray600: hsl(var(--gray), 45%);
 
-  --color-background: white;
+  --color-background: var(--gray100);
   --color-highlight: var(--red);
   --color-highlight-secondary: var(--blue);
   --color-text: var(--black);
@@ -63,7 +63,7 @@ const Main = styled.main`
   --text-2xl: 1.875rem;
 
   --text-serif: Recoleta, ui-serif, Georgia, serif;
-  --text-mono: SF Mono, Menlo, ui-monospace, monospace;
+  --text-mono: DM Mono, Menlo, ui-monospace, monospace;
   --text-sans: Inter, system-ui, -apple-system, sans-serif;
 
   background: var(--color-background);

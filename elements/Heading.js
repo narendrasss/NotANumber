@@ -3,6 +3,7 @@ import { styled } from 'twin.macro'
 const Heading = styled.h2`
   font-size: var(--text-2xl);
   font-family: var(--text-serif);
+  font-weight: 500;
   position: relative;
 
   &:before {
